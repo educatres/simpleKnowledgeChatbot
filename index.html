@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simple Knowledge Chatbot</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main id="appShell" class="app-shell">
+      <aside id="settingsPanel" class="settings-panel" aria-label="設定區">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">K</span>
+          <div>
+            <h1>Knowledge Chatbot</h1>
+            <p>多模型靜態知識庫問答</p>
+          </div>
+        </div>
+
+        <section class="settings-section" aria-labelledby="api-settings-title">
+          <h2 id="api-settings-title">API 設定</h2>
+          <label class="field">
+            <span>提供者</span>
+            <select id="providerSelect">
+              <option value="cgu" selected>CGU API Key</option>
+              <option value="openai">OpenAI API Key</option>
+              <option value="google">Google AI Studio API Key</option>
+              <option value="claude">Claude API Key</option>
+            </select>
+          </label>
+          <label class="field">
+            <span id="apiKeyLabel">CGU API Key</span>
+            <input
+              id="apiKeyInput"
+              type="password"
+              autocomplete="off"
+              placeholder="輸入你的 CGU API Key"
+            />
+          </label>
+          <label class="field">
+            <span>Endpoint</span>
+            <input
+              id="endpointInput"
+              type="url"
+              value="https://air.cgu.edu.tw/cgullmapi/v1"
+            />
+          </label>
+          <label class="field">
+            <span>預設模型</span>
+            <select id="modelSelect">
+              <option value="gpt-5.4-mini" selected>gpt-5.4-mini</option>
+              <option value="gpt-5.4">gpt-5.4</option>
+              <option value="gpt-5.5">gpt-5.5</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>自訂模型</span>
+            <input
+              id="customModelInput"
+              type="text"
+              autocomplete="off"
+              placeholder="留空則使用上方預設模型"
+            />
+          </label>
+          <label class="field">
+            <span>系統提示</span>
+            <textarea id="systemPromptInput" rows="4">你是一個清楚、可靠、使用繁體中文回答的 AI 助手。</textarea>
+          </label>
+        </section>
+
+        <section class="settings-section" aria-labelledby="knowledge-settings-title">
+          <h2 id="knowledge-settings-title">知識庫</h2>
+          <label class="file-picker">
+            <span>選擇 .txt 或 .md 檔案</span>
+            <input id="knowledgeFileInput" type="file" accept=".txt,.md,text/plain,text/markdown" />
+          </label>
+
+          <div class="knowledge-status" aria-live="polite">
+            <div>
+              <span class="muted">目前載入</span>
+              <strong id="knowledgeFileName">目前未載入知識庫</strong>
+            </div>
+            <div class="metrics">
+              <span><strong id="knowledgeCharCount">0</strong> 字</span>
+              <span><strong id="knowledgeChunkCount">0</strong> 片段</span>
+            </div>
+          </div>
+
+          <label class="field">
+            <span>回答模式</span>
+            <select id="answerModeSelect">
+              <option value="knowledge_first">優先根據知識庫，必要時可用模型補充</option>
+              <option value="strict_knowledge">嚴格限制在知識庫範圍內回答</option>
+            </select>
+          </label>
+
+          <button id="clearKnowledgeButton" class="secondary-button" type="button">清除知識庫</button>
+          <p class="privacy-note">
+            提醒：上傳的檔案只會在你的瀏覽器中讀取與切段，不會儲存在本網站伺服器。當你向 AI 提問時，系統會把與問題相關的文字片段連同問題送到你選擇的 AI API 進行回答。請勿上傳高度敏感或不應提供給第三方 AI 服務的資料。
+          </p>
+        </section>
+      </aside>
+
+      <section class="chat-panel" aria-label="聊天區">
+        <header class="chat-header">
+          <div class="chat-title-row">
+            <button
+              id="settingsToggleButton"
+              class="secondary-button compact-button"
+              type="button"
+              aria-controls="settingsPanel"
+              aria-expanded="true"
+            >
+              隱藏工具
+            </button>
+            <div>
+              <h2>聊天</h2>
+              <p id="chatHint">目前尚未載入知識庫，AI 將使用一般模型能力回答。</p>
+            </div>
+          </div>
+          <button id="clearChatButton" class="icon-button" type="button" title="清除對話" aria-label="清除對話">
+            清除
+          </button>
+        </header>
+
+        <div id="messages" class="messages" aria-live="polite">
+          <article class="message assistant">
+            <div class="message-body">請先選擇 API 提供者並輸入 API Key。你可以直接聊天，也可以先上傳 .txt 或 .md 知識庫後再提問。</div>
+          </article>
+        </div>
+
+        <form id="chatForm" class="composer">
+          <textarea
+            id="questionInput"
+            rows="2"
+            placeholder="輸入問題..."
+            aria-label="輸入問題"
+          ></textarea>
+          <button id="sendButton" type="submit">送出</button>
+        </form>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
