@@ -5,6 +5,7 @@ const GOOGLE_MAX_OUTPUT_TOKENS = 8192;
 const TYPEWRITER_CHARS_PER_FRAME = 3;
 const ANSWER_MODE_STORAGE_KEY = "cgu_chatbot_answer_mode";
 const TOOL_PANEL_STORAGE_KEY = "knowledge_chatbot_tool_panel_collapsed";
+const APP_STATE_STORAGE_KEY = "knowledge_chatbot_app_state";
 const PROVIDERS = {
   cgu: {
     label: "CGU",
@@ -97,11 +98,18 @@ function init() {
   answerModeSelect.value = answerMode;
   studentAnswerModeSelect.value = answerMode;
   updateProviderUi(providerSelect.value);
+  restoreAppState();
   applyUrlSettings();
   updateToolPanelUi();
   updateKnowledgeUi();
 
   providerSelect.addEventListener("change", handleProviderChange);
+  apiKeyInput.addEventListener("input", saveAppState);
+  endpointInput.addEventListener("input", saveAppState);
+  modelSelect.addEventListener("change", saveAppState);
+  customModelInput.addEventListener("input", saveAppState);
+  systemPromptInput.addEventListener("input", saveAppState);
+  questionInput.addEventListener("input", saveAppState);
   generateStudentLinkButton.addEventListener("click", generateStudentLink);
   copyStudentLinkButton.addEventListener("click", copyStudentLink);
   knowledgeToggleButton.addEventListener("click", toggleKnowledgeSettings);
@@ -136,6 +144,7 @@ function handleKnowledgeFileChange(event) {
     knowledgeFileName = file.name;
     knowledgeChunks = splitKnowledgeText(knowledgeBaseText, knowledgeFileName);
     updateKnowledgeUi();
+    saveAppState();
     showMessage(`已載入知識庫：${knowledgeFileName}，共 ${knowledgeChunks.length} 個片段。`, "system");
   };
 
@@ -294,9 +303,10 @@ async function handleChatSubmit(event) {
 
   showMessage(question, "user");
   questionInput.value = "";
+  saveAppState();
   setSendingState(true);
 
-  const pendingMessage = showMessage("正在思考...", "assistant");
+  const pendingMessage = showMessage("正在思考...", "assistant", false);
   const pendingMessageBody = pendingMessage.querySelector(".message-body");
   pendingMessage.classList.add("streaming");
 
@@ -330,6 +340,7 @@ async function handleChatSubmit(event) {
   } finally {
     pendingMessage.classList.remove("streaming");
     setSendingState(false);
+    saveAppState();
   }
 }
 
@@ -628,6 +639,97 @@ function getSelectedModel() {
 
 function handleProviderChange(event) {
   updateProviderUi(event.target.value);
+  saveAppState();
+}
+
+function restoreAppState() {
+  const savedState = readSavedAppState();
+  if (!savedState) return;
+
+  const providerId = normalizeProviderId(savedState.providerId);
+  if (providerId) {
+    providerSelect.value = providerId;
+    updateProviderUi(providerId);
+  }
+
+  apiKeyInput.value = savedState.apiKey || "";
+  endpointInput.value = savedState.endpoint ?? endpointInput.value;
+
+  if (savedState.model) {
+    setModelValue(savedState.model);
+  }
+
+  systemPromptInput.value = savedState.systemPrompt ?? systemPromptInput.value;
+  questionInput.value = savedState.draftQuestion ?? "";
+  studentLinkOutput.value = savedState.studentUrl ?? "";
+  copyStudentLinkButton.disabled = !studentLinkOutput.value;
+  if (studentLinkOutput.value) {
+    renderQrCode(studentLinkOutput.value);
+  }
+
+  if (savedState.answerMode === "knowledge_first" || savedState.answerMode === "strict_knowledge") {
+    answerMode = savedState.answerMode;
+    answerModeSelect.value = answerMode;
+    studentAnswerModeSelect.value = answerMode;
+  }
+
+  if (typeof savedState.isToolPanelCollapsed === "boolean") {
+    isToolPanelCollapsed = savedState.isToolPanelCollapsed;
+  }
+
+  if (savedState.knowledgeBaseText && savedState.knowledgeFileName) {
+    knowledgeBaseText = savedState.knowledgeBaseText;
+    knowledgeFileName = savedState.knowledgeFileName;
+    knowledgeChunks = splitKnowledgeText(knowledgeBaseText, knowledgeFileName);
+  }
+
+  if (Array.isArray(savedState.messages)) {
+    messages.innerHTML = "";
+    savedState.messages.forEach((message) => {
+      if (!message?.text) return;
+      showMessage(message.text, message.role || "assistant", false);
+    });
+  }
+}
+
+function readSavedAppState() {
+  try {
+    return JSON.parse(localStorage.getItem(APP_STATE_STORAGE_KEY) || "null");
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveAppState() {
+  const state = {
+    providerId: providerSelect.value,
+    apiKey: apiKeyInput.value,
+    endpoint: endpointInput.value,
+    model: getSelectedModel(),
+    systemPrompt: systemPromptInput.value,
+    studentUrl: studentLinkOutput.value,
+    answerMode,
+    isToolPanelCollapsed,
+    draftQuestion: questionInput.value,
+    knowledgeFileName,
+    knowledgeBaseText,
+    messages: getMessageHistory(),
+  };
+
+  try {
+    localStorage.setItem(APP_STATE_STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    showMessage("本機儲存空間不足，部分設定可能無法在重新整理後保留。", "error", false);
+  }
+}
+
+function getMessageHistory() {
+  return [...messages.querySelectorAll(".message")].map((message) => ({
+    role: [...message.classList].find((className) =>
+      ["user", "assistant", "system", "error"].includes(className)
+    ) || "assistant",
+    text: message.querySelector(".message-body")?.textContent || "",
+  }));
 }
 
 function toggleKnowledgeSettings() {
@@ -679,6 +781,10 @@ function applyUrlSettings() {
   if (systemPrompt) {
     systemPromptInput.value = systemPrompt;
   }
+
+  if (providerId || apiKey || model || systemPrompt) {
+    saveAppState();
+  }
 }
 
 function normalizeProviderId(value) {
@@ -719,6 +825,7 @@ function generateStudentLink() {
   studentLinkOutput.value = studentUrl;
   copyStudentLinkButton.disabled = false;
   renderQrCode(studentUrl);
+  saveAppState();
   showMessage("已產生學生網址與 QR Code。學生使用此連結時，工具列會自動鎖住並隱藏。", "system");
 }
 
@@ -776,6 +883,7 @@ function toggleToolPanel() {
   isToolPanelCollapsed = !isToolPanelCollapsed;
   localStorage.setItem(TOOL_PANEL_STORAGE_KEY, String(isToolPanelCollapsed));
   updateToolPanelUi();
+  saveAppState();
 }
 
 function updateToolPanelUi() {
@@ -834,6 +942,7 @@ function handleAnswerModeChange(event) {
   answerModeSelect.value = answerMode;
   studentAnswerModeSelect.value = answerMode;
   localStorage.setItem(ANSWER_MODE_STORAGE_KEY, answerMode);
+  saveAppState();
 }
 
 function clearKnowledgeBase() {
@@ -843,6 +952,7 @@ function clearKnowledgeBase() {
   knowledgeFileInput.value = "";
   studentKnowledgeFileInput.value = "";
   updateKnowledgeUi();
+  saveAppState();
   showMessage("已清除知識庫。", "system");
 }
 
@@ -869,7 +979,7 @@ function updateKnowledgeUi() {
     : "目前尚未載入知識庫，AI 將使用一般模型能力回答。";
 }
 
-function showMessage(text, role = "assistant") {
+function showMessage(text, role = "assistant", shouldPersist = true) {
   const article = document.createElement("article");
   article.className = `message ${role}`;
 
@@ -880,6 +990,10 @@ function showMessage(text, role = "assistant") {
   article.append(body);
   messages.append(article);
   messages.scrollTop = messages.scrollHeight;
+
+  if (shouldPersist) {
+    saveAppState();
+  }
 
   return article;
 }
