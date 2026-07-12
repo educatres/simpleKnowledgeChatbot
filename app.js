@@ -44,6 +44,7 @@ let knowledgeChunks = [];
 let knowledgeFileName = "";
 let answerMode = "knowledge_first";
 let isToolPanelCollapsed = false;
+let isSettingsLocked = false;
 
 const appShell = document.querySelector("#appShell");
 const apiKeyInput = document.querySelector("#apiKeyInput");
@@ -488,6 +489,8 @@ function applyUrlSettings() {
 
   if (apiKey) {
     apiKeyInput.value = apiKey;
+    isSettingsLocked = true;
+    isToolPanelCollapsed = true;
   }
 
   if (model) {
@@ -535,13 +538,20 @@ function buildExampleUrl() {
 }
 
 function toggleToolPanel() {
+  if (isSettingsLocked) return;
+
   isToolPanelCollapsed = !isToolPanelCollapsed;
   localStorage.setItem(TOOL_PANEL_STORAGE_KEY, String(isToolPanelCollapsed));
   updateToolPanelUi();
 }
 
 function updateToolPanelUi() {
+  if (isSettingsLocked) {
+    isToolPanelCollapsed = true;
+  }
+
   appShell.classList.toggle("tool-panel-collapsed", isToolPanelCollapsed);
+  settingsToggleButton.hidden = isSettingsLocked;
   settingsToggleButton.textContent = isToolPanelCollapsed ? "顯示工具" : "隱藏工具";
   settingsToggleButton.setAttribute("aria-expanded", String(!isToolPanelCollapsed));
 }
