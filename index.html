@@ -38,19 +38,19 @@
           <label class="field">
             <span>提供者</span>
             <select id="providerSelect">
-              <option value="cgu" selected>CGU API Key</option>
+              <option value="cgu">CGU API Key</option>
               <option value="openai">OpenAI API Key</option>
-              <option value="google">Google AI Studio API Key</option>
+              <option value="google" selected>Google AI Studio API Key</option>
               <option value="claude">Claude API Key</option>
             </select>
           </label>
           <label class="field">
-            <span id="apiKeyLabel">CGU API Key</span>
+            <span id="apiKeyLabel">Google AI Studio API Key</span>
             <input
               id="apiKeyInput"
               type="password"
               autocomplete="off"
-              placeholder="輸入你的 CGU API Key"
+              placeholder="輸入你的 Google AI Studio API Key"
             />
           </label>
           <label class="field">
@@ -58,15 +58,15 @@
             <input
               id="endpointInput"
               type="url"
-              value="https://air.cgu.edu.tw/cgullmapi/v1"
+              value="https://generativelanguage.googleapis.com/v1beta"
             />
           </label>
           <label class="field">
             <span>預設模型</span>
             <select id="modelSelect">
-              <option value="gpt-5.4-mini" selected>gpt-5.4-mini</option>
-              <option value="gpt-5.4">gpt-5.4</option>
-              <option value="gpt-5.5">gpt-5.5</option>
+              <option value="gemini-3.5-flash" selected>gemini-3.5-flash</option>
+              <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+              <option value="gemini-2.5-pro">gemini-2.5-pro</option>
             </select>
           </label>
           <label class="field">
