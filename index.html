@@ -162,28 +162,29 @@
               <p id="chatHint">目前尚未載入知識庫，AI 將使用一般模型能力回答。</p>
             </div>
           </div>
-          <button id="clearChatButton" class="icon-button" type="button" title="清除對話" aria-label="清除對話">
-            清除
-          </button>
-        </header>
-
-        <section id="studentKnowledgeBox" class="student-knowledge-box" aria-labelledby="student-knowledge-title" hidden>
-          <div class="student-knowledge-summary">
-            <div>
-              <h3 id="student-knowledge-title">資料檔案</h3>
-              <p id="studentKnowledgeHint">目前尚未載入資料檔案。</p>
-            </div>
+          <div class="chat-actions">
             <button
               id="studentKnowledgeToggleButton"
               class="secondary-button compact-button"
               type="button"
               aria-controls="studentKnowledgeContent"
               aria-expanded="false"
+              hidden
             >
               上傳資料
             </button>
+            <button id="clearChatButton" class="icon-button" type="button" title="清除對話" aria-label="清除對話">
+              清除
+            </button>
           </div>
+        </header>
+
+        <section id="studentKnowledgeBox" class="student-knowledge-box" aria-labelledby="student-knowledge-title" hidden>
           <div id="studentKnowledgeContent" class="student-knowledge-content" hidden>
+            <div>
+              <h3 id="student-knowledge-title">資料檔案</h3>
+              <p id="studentKnowledgeHint">目前尚未載入資料檔案。</p>
+            </div>
             <label class="file-picker">
               <span>選擇 .txt 或 .md 檔案</span>
               <input id="studentKnowledgeFileInput" type="file" accept=".txt,.md,text/plain,text/markdown" />

@@ -338,27 +338,24 @@ textarea:focus {
   border-bottom: 1px solid var(--line);
 }
 
+.chat-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .student-knowledge-box {
   display: grid;
-  gap: 12px;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--line);
   background: #fbfcfd;
 }
 
-.student-knowledge-summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 14px;
-}
-
-.student-knowledge-summary h3 {
+.student-knowledge-content h3 {
   margin: 0;
   font-size: 0.98rem;
 }
 
-.student-knowledge-summary p {
+.student-knowledge-content p {
   margin-top: 4px;
   color: var(--muted);
   font-size: 0.9rem;
@@ -369,6 +366,8 @@ textarea:focus {
   display: grid;
   gap: 12px;
   max-width: 760px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
 }
 
 .chat-title-row {
@@ -503,8 +502,9 @@ textarea:focus {
     display: grid;
   }
 
-  .student-knowledge-summary {
-    display: grid;
+  .chat-actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .chat-title-row {

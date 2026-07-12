@@ -775,6 +775,7 @@ function updateToolPanelUi() {
   appShell.classList.toggle("tool-panel-collapsed", isToolPanelCollapsed);
   settingsToggleButton.hidden = isSettingsLocked;
   studentKnowledgeBox.hidden = !isSettingsLocked;
+  studentKnowledgeToggleButton.hidden = !isSettingsLocked;
   settingsToggleButton.textContent = isToolPanelCollapsed ? "顯示工具" : "隱藏工具";
   settingsToggleButton.setAttribute("aria-expanded", String(!isToolPanelCollapsed));
 }
