@@ -75,7 +75,7 @@ function init() {
   if (savedAnswerMode === "knowledge_first" || savedAnswerMode === "strict_knowledge") {
     answerMode = savedAnswerMode;
   }
-  isToolPanelCollapsed = localStorage.getItem(TOOL_PANEL_STORAGE_KEY) === "true";
+  isToolPanelCollapsed = localStorage.getItem(TOOL_PANEL_STORAGE_KEY) !== "false";
 
   answerModeSelect.value = answerMode;
   updateProviderUi(providerSelect.value);
