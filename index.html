@@ -19,6 +19,7 @@
 
         <section class="settings-section" aria-labelledby="api-settings-title">
           <h2 id="api-settings-title">API 設定</h2>
+          <button id="urlHelpButton" class="secondary-button" type="button">網址參數說明</button>
           <label class="field">
             <span>提供者</span>
             <select id="providerSelect">
@@ -100,6 +101,39 @@
           </p>
         </section>
       </aside>
+
+      <dialog id="urlHelpDialog" class="help-dialog" aria-labelledby="url-help-title">
+        <form method="dialog" class="help-dialog-card">
+          <div class="help-dialog-header">
+            <h2 id="url-help-title">網址參數說明</h2>
+            <button class="icon-button compact-button" type="submit" aria-label="關閉說明">關閉</button>
+          </div>
+          <p>
+            你可以在網址後面加上三個參數，開啟網頁時自動帶入 API 提供者、API Key 和模型。
+          </p>
+          <dl class="param-list">
+            <div>
+              <dt>provider</dt>
+              <dd>可填 cgu、openai、google、claude</dd>
+            </div>
+            <div>
+              <dt>apiKey</dt>
+              <dd>你的 API Key</dd>
+            </div>
+            <div>
+              <dt>model</dt>
+              <dd>模型名稱，例如 gpt-5.4-mini</dd>
+            </div>
+          </dl>
+          <label class="field">
+            <span>範例網址</span>
+            <textarea id="urlExampleOutput" rows="3" readonly></textarea>
+          </label>
+          <p class="privacy-note">
+            注意：API Key 放在網址中可能會留在瀏覽器紀錄或分享連結裡，建議只在自己可信任的裝置上使用。
+          </p>
+        </form>
+      </dialog>
 
       <section class="chat-panel" aria-label="聊天區">
         <header class="chat-header">

@@ -59,6 +59,9 @@ const answerModeSelect = document.querySelector("#answerModeSelect");
 const clearKnowledgeButton = document.querySelector("#clearKnowledgeButton");
 const clearChatButton = document.querySelector("#clearChatButton");
 const settingsToggleButton = document.querySelector("#settingsToggleButton");
+const urlHelpButton = document.querySelector("#urlHelpButton");
+const urlHelpDialog = document.querySelector("#urlHelpDialog");
+const urlExampleOutput = document.querySelector("#urlExampleOutput");
 const chatHint = document.querySelector("#chatHint");
 const messages = document.querySelector("#messages");
 const chatForm = document.querySelector("#chatForm");
@@ -76,10 +79,12 @@ function init() {
 
   answerModeSelect.value = answerMode;
   updateProviderUi(providerSelect.value);
+  applyUrlSettings();
   updateToolPanelUi();
   updateKnowledgeUi();
 
   providerSelect.addEventListener("change", handleProviderChange);
+  urlHelpButton.addEventListener("click", showUrlHelp);
   settingsToggleButton.addEventListener("click", toggleToolPanel);
   knowledgeFileInput.addEventListener("change", handleKnowledgeFileChange);
   answerModeSelect.addEventListener("change", handleAnswerModeChange);
@@ -461,6 +466,65 @@ function getSelectedModel() {
 
 function handleProviderChange(event) {
   updateProviderUi(event.target.value);
+}
+
+function applyUrlSettings() {
+  const params = new URLSearchParams(window.location.search);
+  const providerId = normalizeProviderId(params.get("provider") || params.get("apiProvider"));
+  const apiKey = params.get("apiKey") || params.get("key");
+  const model = params.get("model");
+
+  if (providerId) {
+    providerSelect.value = providerId;
+    updateProviderUi(providerId);
+  }
+
+  if (apiKey) {
+    apiKeyInput.value = apiKey;
+  }
+
+  if (model) {
+    setModelValue(model);
+  }
+}
+
+function normalizeProviderId(value) {
+  const providerId = String(value || "").trim().toLowerCase();
+  return PROVIDERS[providerId] ? providerId : "";
+}
+
+function setModelValue(model) {
+  const trimmedModel = model.trim();
+  const matchingOption = [...modelSelect.options].find((option) => option.value === trimmedModel);
+
+  if (matchingOption) {
+    modelSelect.value = trimmedModel;
+    customModelInput.value = "";
+    return;
+  }
+
+  customModelInput.value = trimmedModel;
+}
+
+function showUrlHelp() {
+  const exampleUrl = buildExampleUrl();
+  urlExampleOutput.value = exampleUrl;
+
+  if (typeof urlHelpDialog.showModal === "function") {
+    urlHelpDialog.showModal();
+    return;
+  }
+
+  window.alert(`網址參數範例：\n${exampleUrl}`);
+}
+
+function buildExampleUrl() {
+  const url = new URL(window.location.href);
+  url.search = "";
+  url.searchParams.set("provider", providerSelect.value || "cgu");
+  url.searchParams.set("apiKey", apiKeyInput.value.trim() || "YOUR_API_KEY");
+  url.searchParams.set("model", getSelectedModel() || "gpt-5.4-mini");
+  return url.toString();
 }
 
 function toggleToolPanel() {
