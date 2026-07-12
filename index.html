@@ -83,38 +83,66 @@
             <span>系統提示</span>
             <textarea id="systemPromptInput" rows="4">你是一個清楚、可靠、使用繁體中文回答的 AI 助手。</textarea>
           </label>
+          <section class="student-link-box" aria-labelledby="student-link-title">
+            <h3 id="student-link-title">學生使用網址與 QR Code</h3>
+            <p>
+              老師調整上方 API 參數後，按下按鈕即可產生學生專用網址。學生開啟後工具列會被鎖住並隱藏。
+            </p>
+            <button id="generateStudentLinkButton" class="secondary-button" type="button">
+              產生網址與 QR Code
+            </button>
+            <label class="field">
+              <span>學生網址</span>
+              <textarea id="studentLinkOutput" rows="4" readonly placeholder="按下產生後會顯示學生網址"></textarea>
+            </label>
+            <button id="copyStudentLinkButton" class="secondary-button" type="button" disabled>
+              複製學生網址
+            </button>
+            <div id="studentQrCode" class="qr-code" aria-live="polite"></div>
+          </section>
         </section>
 
         <section class="settings-section" aria-labelledby="knowledge-settings-title">
           <h2 id="knowledge-settings-title">知識庫</h2>
-          <label class="file-picker">
-            <span>選擇 .txt 或 .md 檔案</span>
-            <input id="knowledgeFileInput" type="file" accept=".txt,.md,text/plain,text/markdown" />
-          </label>
+          <button
+            id="knowledgeToggleButton"
+            class="secondary-button"
+            type="button"
+            aria-controls="knowledgeSettingsContent"
+            aria-expanded="false"
+          >
+            顯示知識庫設定
+          </button>
+          <div id="knowledgeSettingsContent" class="knowledge-settings-content" hidden>
+            <label class="file-picker">
+              <span>選擇 .txt 或 .md 檔案</span>
+              <input id="knowledgeFileInput" type="file" accept=".txt,.md,text/plain,text/markdown" />
+            </label>
 
-          <div class="knowledge-status" aria-live="polite">
-            <div>
-              <span class="muted">目前載入</span>
-              <strong id="knowledgeFileName">目前未載入知識庫</strong>
+            <div class="knowledge-status" aria-live="polite">
+              <div>
+                <span class="muted">目前載入</span>
+                <strong id="knowledgeFileName">目前未載入知識庫</strong>
+              </div>
+              <div class="metrics">
+                <span><strong id="knowledgeCharCount">0</strong> 字</span>
+                <span><strong id="knowledgeChunkCount">0</strong> 片段</span>
+              </div>
             </div>
-            <div class="metrics">
-              <span><strong id="knowledgeCharCount">0</strong> 字</span>
-              <span><strong id="knowledgeChunkCount">0</strong> 片段</span>
-            </div>
+
+            <label class="field">
+              <span>回答模式</span>
+              <select id="answerModeSelect">
+                <option value="knowledge_first">優先根據知識庫，必要時可用模型補充</option>
+                <option value="strict_knowledge">嚴格限制在知識庫範圍內回答</option>
+              </select>
+            </label>
+
+            <button id="clearKnowledgeButton" class="secondary-button" type="button">清除知識庫</button>
+            <p class="privacy-note">
+              提醒：上傳的檔案只會在你的瀏覽器中讀取與切段，不會儲存在本網站伺服器。當你向 AI 提問時，系統會把與問題相關的文字片段連同問題送到你選擇的 AI API 進行回答。請勿上傳高度敏感或不應提供給第三方 AI 服務的資料。
+            </p>
           </div>
-
-          <label class="field">
-            <span>回答模式</span>
-            <select id="answerModeSelect">
-              <option value="knowledge_first">優先根據知識庫，必要時可用模型補充</option>
-              <option value="strict_knowledge">嚴格限制在知識庫範圍內回答</option>
-            </select>
-          </label>
-
-          <button id="clearKnowledgeButton" class="secondary-button" type="button">清除知識庫</button>
-          <p class="privacy-note">
-            提醒：上傳的檔案只會在你的瀏覽器中讀取與切段，不會儲存在本網站伺服器。當你向 AI 提問時，系統會把與問題相關的文字片段連同問題送到你選擇的 AI API 進行回答。請勿上傳高度敏感或不應提供給第三方 AI 服務的資料。
-          </p>
         </section>
       </aside>
 
@@ -206,6 +234,7 @@
       </section>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

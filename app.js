@@ -54,6 +54,12 @@ const endpointInput = document.querySelector("#endpointInput");
 const modelSelect = document.querySelector("#modelSelect");
 const customModelInput = document.querySelector("#customModelInput");
 const systemPromptInput = document.querySelector("#systemPromptInput");
+const generateStudentLinkButton = document.querySelector("#generateStudentLinkButton");
+const studentLinkOutput = document.querySelector("#studentLinkOutput");
+const copyStudentLinkButton = document.querySelector("#copyStudentLinkButton");
+const studentQrCode = document.querySelector("#studentQrCode");
+const knowledgeToggleButton = document.querySelector("#knowledgeToggleButton");
+const knowledgeSettingsContent = document.querySelector("#knowledgeSettingsContent");
 const knowledgeFileInput = document.querySelector("#knowledgeFileInput");
 const knowledgeFileNameEl = document.querySelector("#knowledgeFileName");
 const knowledgeCharCountEl = document.querySelector("#knowledgeCharCount");
@@ -88,6 +94,9 @@ function init() {
 
   providerSelect.addEventListener("change", handleProviderChange);
   urlHelpButton.addEventListener("click", showUrlHelp);
+  generateStudentLinkButton.addEventListener("click", generateStudentLink);
+  copyStudentLinkButton.addEventListener("click", copyStudentLink);
+  knowledgeToggleButton.addEventListener("click", toggleKnowledgeSettings);
   settingsToggleButton.addEventListener("click", toggleToolPanel);
   knowledgeFileInput.addEventListener("change", handleKnowledgeFileChange);
   answerModeSelect.addEventListener("change", handleAnswerModeChange);
@@ -476,6 +485,13 @@ function handleProviderChange(event) {
   updateProviderUi(event.target.value);
 }
 
+function toggleKnowledgeSettings() {
+  const willShow = knowledgeSettingsContent.hidden;
+  knowledgeSettingsContent.hidden = !willShow;
+  knowledgeToggleButton.textContent = willShow ? "隱藏知識庫設定" : "顯示知識庫設定";
+  knowledgeToggleButton.setAttribute("aria-expanded", String(willShow));
+}
+
 function applyUrlSettings() {
   const params = new URLSearchParams(window.location.search);
   const providerId = normalizeProviderId(params.get("provider") || params.get("apiProvider"));
@@ -529,12 +545,79 @@ function showUrlHelp() {
 }
 
 function buildExampleUrl() {
+  return buildStudentUrl(apiKeyInput.value.trim() || "YOUR_API_KEY");
+}
+
+function generateStudentLink() {
+  const apiKey = apiKeyInput.value.trim();
+  const model = getSelectedModel();
+
+  if (!apiKey) {
+    showMessage("請先輸入 API Key，再產生學生網址。", "error");
+    apiKeyInput.focus();
+    return;
+  }
+
+  if (!model) {
+    showMessage("請先選擇或輸入模型名稱，再產生學生網址。", "error");
+    customModelInput.focus();
+    return;
+  }
+
+  const studentUrl = buildStudentUrl(apiKey);
+  studentLinkOutput.value = studentUrl;
+  copyStudentLinkButton.disabled = false;
+  renderQrCode(studentUrl);
+  showMessage("已產生學生網址與 QR Code。學生使用此連結時，工具列會自動鎖住並隱藏。", "system");
+}
+
+async function copyStudentLink() {
+  const studentUrl = studentLinkOutput.value.trim();
+  if (!studentUrl) return;
+
+  try {
+    await navigator.clipboard.writeText(studentUrl);
+    showMessage("已複製學生網址。", "system");
+  } catch (error) {
+    studentLinkOutput.select();
+    showMessage("無法自動複製，請直接選取學生網址後手動複製。", "error");
+  }
+}
+
+function buildStudentUrl(apiKey) {
   const url = new URL(window.location.href);
   url.search = "";
   url.searchParams.set("provider", providerSelect.value || "cgu");
-  url.searchParams.set("apiKey", apiKeyInput.value.trim() || "YOUR_API_KEY");
+  url.searchParams.set("apiKey", apiKey);
   url.searchParams.set("model", getSelectedModel() || "gpt-5.4-mini");
   return url.toString();
+}
+
+async function renderQrCode(url) {
+  studentQrCode.innerHTML = "";
+
+  if (!window.QRCode?.toCanvas) {
+    const fallback = document.createElement("p");
+    fallback.textContent = "QR Code 函式庫載入失敗，請先使用上方學生網址。";
+    studentQrCode.append(fallback);
+    return;
+  }
+
+  const canvas = document.createElement("canvas");
+  studentQrCode.append(canvas);
+
+  try {
+    await window.QRCode.toCanvas(canvas, url, {
+      width: 220,
+      margin: 2,
+      errorCorrectionLevel: "M",
+    });
+  } catch (error) {
+    studentQrCode.innerHTML = "";
+    const fallback = document.createElement("p");
+    fallback.textContent = "QR Code 產生失敗，網址可能太長，請先使用上方學生網址。";
+    studentQrCode.append(fallback);
+  }
 }
 
 function toggleToolPanel() {

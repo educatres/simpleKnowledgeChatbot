@@ -18,6 +18,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   height: 100%;
@@ -157,6 +161,54 @@ h1 {
   color: var(--muted);
   font-size: 0.9rem;
   line-height: 1.6;
+}
+
+.student-link-box,
+.knowledge-settings-content {
+  display: grid;
+  gap: 12px;
+}
+
+.student-link-box {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-soft);
+}
+
+.student-link-box h3 {
+  margin: 0;
+  font-size: 0.96rem;
+}
+
+.student-link-box p {
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+#studentLinkOutput {
+  min-height: 96px;
+  font-size: 0.86rem;
+}
+
+.qr-code {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+
+.qr-code:not(:empty) {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+}
+
+.qr-code img,
+.qr-code canvas {
+  max-width: 100%;
+  height: auto;
 }
 
 .field,

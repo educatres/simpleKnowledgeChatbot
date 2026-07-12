@@ -26,7 +26,9 @@ https://educatres.github.io/simpleKnowledgeChatbot/
 - 知識庫只在瀏覽器端讀取與切段，不會上傳到網站伺服器。
 - 可選擇「優先根據知識庫」或「嚴格限制在知識庫範圍內回答」。
 - 支援網址 GET 參數帶入 `provider`、`apiKey`、`model`。
+- 可在工具區依目前參數產生學生網址與 QR Code。
 - 如果網址帶入 API Key，工具列會自動鎖住並隱藏，避免學生看到或修改設定。
+- 知識庫設定預設隱藏，需要時再展開。
 
 ## 基本使用方式
 
@@ -136,6 +138,8 @@ https://educatres.github.io/simpleKnowledgeChatbot/?provider=claude&apiKey=YOUR_
 3. 使用任何 QR Code 產生器把網址轉成 QR Code。
 4. 在課堂中投影或印出 QR Code。
 5. 課程結束後立即更換或註銷該 API Key。
+
+也可以直接在網頁工具區中調整 API 提供者、API Key 與模型後，按下「產生網址與 QR Code」，網頁會自動產生學生可用的連結與 QR Code。
 
 ## 知識庫功能
 
