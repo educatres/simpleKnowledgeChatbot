@@ -106,6 +106,7 @@ function init() {
   copyStudentLinkButton.addEventListener("click", copyStudentLink);
   knowledgeToggleButton.addEventListener("click", toggleKnowledgeSettings);
   studentKnowledgeToggleButton.addEventListener("click", toggleStudentKnowledgeSettings);
+  studentKnowledgeBox.addEventListener("click", handleStudentKnowledgeBackdropClick);
   settingsToggleButton.addEventListener("click", toggleToolPanel);
   knowledgeFileInput.addEventListener("change", handleKnowledgeFileChange);
   studentKnowledgeFileInput.addEventListener("change", handleKnowledgeFileChange);
@@ -638,9 +639,19 @@ function toggleKnowledgeSettings() {
 
 function toggleStudentKnowledgeSettings() {
   const willShow = studentKnowledgeContent.hidden;
+  studentKnowledgeBox.hidden = !willShow;
   studentKnowledgeContent.hidden = !willShow;
   studentKnowledgeToggleButton.textContent = willShow ? "隱藏資料" : "上傳資料";
   studentKnowledgeToggleButton.setAttribute("aria-expanded", String(willShow));
+}
+
+function handleStudentKnowledgeBackdropClick(event) {
+  if (event.target !== studentKnowledgeBox) return;
+
+  studentKnowledgeBox.hidden = true;
+  studentKnowledgeContent.hidden = true;
+  studentKnowledgeToggleButton.textContent = "上傳資料";
+  studentKnowledgeToggleButton.setAttribute("aria-expanded", "false");
 }
 
 function applyUrlSettings() {
@@ -774,8 +785,13 @@ function updateToolPanelUi() {
 
   appShell.classList.toggle("tool-panel-collapsed", isToolPanelCollapsed);
   settingsToggleButton.hidden = isSettingsLocked;
-  studentKnowledgeBox.hidden = !isSettingsLocked;
   studentKnowledgeToggleButton.hidden = !isSettingsLocked;
+  if (!isSettingsLocked) {
+    studentKnowledgeBox.hidden = true;
+    studentKnowledgeContent.hidden = true;
+    studentKnowledgeToggleButton.textContent = "上傳資料";
+    studentKnowledgeToggleButton.setAttribute("aria-expanded", "false");
+  }
   settingsToggleButton.textContent = isToolPanelCollapsed ? "顯示工具" : "隱藏工具";
   settingsToggleButton.setAttribute("aria-expanded", String(!isToolPanelCollapsed));
 }

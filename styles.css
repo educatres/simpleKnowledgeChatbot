@@ -347,7 +347,12 @@ textarea:focus {
 
 .student-knowledge-box {
   display: grid;
-  background: #fbfcfd;
+  place-items: center;
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  padding: 24px;
+  background: rgba(23, 32, 42, 0.36);
 }
 
 .student-knowledge-content h3 {
@@ -365,9 +370,14 @@ textarea:focus {
 .student-knowledge-content {
   display: grid;
   gap: 12px;
-  max-width: 760px;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--line);
+  width: min(620px, 100%);
+  max-height: min(720px, calc(100dvh - 48px));
+  overflow: auto;
+  padding: 20px;
+  border: 1px solid #b8c7d3;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 24px 70px rgba(23, 32, 42, 0.24);
 }
 
 .chat-title-row {
