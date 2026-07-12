@@ -167,6 +167,51 @@
           </button>
         </header>
 
+        <section id="studentKnowledgeBox" class="student-knowledge-box" aria-labelledby="student-knowledge-title" hidden>
+          <div class="student-knowledge-summary">
+            <div>
+              <h3 id="student-knowledge-title">資料檔案</h3>
+              <p id="studentKnowledgeHint">目前尚未載入資料檔案。</p>
+            </div>
+            <button
+              id="studentKnowledgeToggleButton"
+              class="secondary-button compact-button"
+              type="button"
+              aria-controls="studentKnowledgeContent"
+              aria-expanded="false"
+            >
+              上傳資料
+            </button>
+          </div>
+          <div id="studentKnowledgeContent" class="student-knowledge-content" hidden>
+            <label class="file-picker">
+              <span>選擇 .txt 或 .md 檔案</span>
+              <input id="studentKnowledgeFileInput" type="file" accept=".txt,.md,text/plain,text/markdown" />
+            </label>
+
+            <div class="knowledge-status" aria-live="polite">
+              <div>
+                <span class="muted">目前載入</span>
+                <strong id="studentKnowledgeFileName">目前未載入資料檔案</strong>
+              </div>
+              <div class="metrics">
+                <span><strong id="studentKnowledgeCharCount">0</strong> 字</span>
+                <span><strong id="studentKnowledgeChunkCount">0</strong> 片段</span>
+              </div>
+            </div>
+
+            <label class="field">
+              <span>回答模式</span>
+              <select id="studentAnswerModeSelect">
+                <option value="knowledge_first">優先根據資料檔案，必要時可用模型補充</option>
+                <option value="strict_knowledge">嚴格依照資料檔案回答</option>
+              </select>
+            </label>
+
+            <button id="studentClearKnowledgeButton" class="secondary-button" type="button">清除資料檔案</button>
+          </div>
+        </section>
+
         <div id="messages" class="messages" aria-live="polite"></div>
 
         <form id="chatForm" class="composer">

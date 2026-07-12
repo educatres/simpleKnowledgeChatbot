@@ -321,7 +321,7 @@ textarea:focus {
 
 .chat-panel {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   height: 100%;
   min-height: 0;
   min-width: 0;
@@ -336,6 +336,39 @@ textarea:focus {
   gap: 16px;
   padding: 20px;
   border-bottom: 1px solid var(--line);
+}
+
+.student-knowledge-box {
+  display: grid;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  background: #fbfcfd;
+}
+
+.student-knowledge-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.student-knowledge-summary h3 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.student-knowledge-summary p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.student-knowledge-content {
+  display: grid;
+  gap: 12px;
+  max-width: 760px;
 }
 
 .chat-title-row {
@@ -467,6 +500,10 @@ textarea:focus {
   }
 
   .chat-header {
+    display: grid;
+  }
+
+  .student-knowledge-summary {
     display: grid;
   }
 

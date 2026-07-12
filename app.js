@@ -69,6 +69,16 @@ const answerModeSelect = document.querySelector("#answerModeSelect");
 const clearKnowledgeButton = document.querySelector("#clearKnowledgeButton");
 const clearChatButton = document.querySelector("#clearChatButton");
 const settingsToggleButton = document.querySelector("#settingsToggleButton");
+const studentKnowledgeBox = document.querySelector("#studentKnowledgeBox");
+const studentKnowledgeToggleButton = document.querySelector("#studentKnowledgeToggleButton");
+const studentKnowledgeContent = document.querySelector("#studentKnowledgeContent");
+const studentKnowledgeFileInput = document.querySelector("#studentKnowledgeFileInput");
+const studentKnowledgeFileNameEl = document.querySelector("#studentKnowledgeFileName");
+const studentKnowledgeCharCountEl = document.querySelector("#studentKnowledgeCharCount");
+const studentKnowledgeChunkCountEl = document.querySelector("#studentKnowledgeChunkCount");
+const studentAnswerModeSelect = document.querySelector("#studentAnswerModeSelect");
+const studentClearKnowledgeButton = document.querySelector("#studentClearKnowledgeButton");
+const studentKnowledgeHint = document.querySelector("#studentKnowledgeHint");
 const chatHint = document.querySelector("#chatHint");
 const messages = document.querySelector("#messages");
 const chatForm = document.querySelector("#chatForm");
@@ -85,6 +95,7 @@ function init() {
   isToolPanelCollapsed = localStorage.getItem(TOOL_PANEL_STORAGE_KEY) !== "false";
 
   answerModeSelect.value = answerMode;
+  studentAnswerModeSelect.value = answerMode;
   updateProviderUi(providerSelect.value);
   applyUrlSettings();
   updateToolPanelUi();
@@ -94,10 +105,14 @@ function init() {
   generateStudentLinkButton.addEventListener("click", generateStudentLink);
   copyStudentLinkButton.addEventListener("click", copyStudentLink);
   knowledgeToggleButton.addEventListener("click", toggleKnowledgeSettings);
+  studentKnowledgeToggleButton.addEventListener("click", toggleStudentKnowledgeSettings);
   settingsToggleButton.addEventListener("click", toggleToolPanel);
   knowledgeFileInput.addEventListener("change", handleKnowledgeFileChange);
+  studentKnowledgeFileInput.addEventListener("change", handleKnowledgeFileChange);
   answerModeSelect.addEventListener("change", handleAnswerModeChange);
+  studentAnswerModeSelect.addEventListener("change", handleAnswerModeChange);
   clearKnowledgeButton.addEventListener("click", clearKnowledgeBase);
+  studentClearKnowledgeButton.addEventListener("click", clearKnowledgeBase);
   clearChatButton.addEventListener("click", clearChat);
   chatForm.addEventListener("submit", handleChatSubmit);
   questionInput.addEventListener("keydown", handleQuestionKeydown);
@@ -109,7 +124,7 @@ function handleKnowledgeFileChange(event) {
 
   if (!isSupportedKnowledgeFile(file)) {
     showMessage("目前僅支援 .txt 或 .md 純文字檔案。", "error");
-    knowledgeFileInput.value = "";
+    event.target.value = "";
     return;
   }
 
@@ -621,6 +636,13 @@ function toggleKnowledgeSettings() {
   knowledgeToggleButton.setAttribute("aria-expanded", String(willShow));
 }
 
+function toggleStudentKnowledgeSettings() {
+  const willShow = studentKnowledgeContent.hidden;
+  studentKnowledgeContent.hidden = !willShow;
+  studentKnowledgeToggleButton.textContent = willShow ? "隱藏資料" : "上傳資料";
+  studentKnowledgeToggleButton.setAttribute("aria-expanded", String(willShow));
+}
+
 function applyUrlSettings() {
   const params = new URLSearchParams(window.location.search);
   const providerId = normalizeProviderId(params.get("p") || params.get("provider") || params.get("apiProvider"));
@@ -752,6 +774,7 @@ function updateToolPanelUi() {
 
   appShell.classList.toggle("tool-panel-collapsed", isToolPanelCollapsed);
   settingsToggleButton.hidden = isSettingsLocked;
+  studentKnowledgeBox.hidden = !isSettingsLocked;
   settingsToggleButton.textContent = isToolPanelCollapsed ? "顯示工具" : "隱藏工具";
   settingsToggleButton.setAttribute("aria-expanded", String(!isToolPanelCollapsed));
 }
@@ -791,6 +814,8 @@ function normalizeForSearch(text) {
 
 function handleAnswerModeChange(event) {
   answerMode = event.target.value;
+  answerModeSelect.value = answerMode;
+  studentAnswerModeSelect.value = answerMode;
   localStorage.setItem(ANSWER_MODE_STORAGE_KEY, answerMode);
 }
 
@@ -799,6 +824,7 @@ function clearKnowledgeBase() {
   knowledgeChunks = [];
   knowledgeFileName = "";
   knowledgeFileInput.value = "";
+  studentKnowledgeFileInput.value = "";
   updateKnowledgeUi();
   showMessage("已清除知識庫。", "system");
 }
@@ -813,7 +839,14 @@ function updateKnowledgeUi() {
   knowledgeFileNameEl.textContent = hasKnowledge ? knowledgeFileName : "目前未載入知識庫";
   knowledgeCharCountEl.textContent = String(knowledgeBaseText.length);
   knowledgeChunkCountEl.textContent = String(knowledgeChunks.length);
+  studentKnowledgeFileNameEl.textContent = hasKnowledge ? knowledgeFileName : "目前未載入資料檔案";
+  studentKnowledgeCharCountEl.textContent = String(knowledgeBaseText.length);
+  studentKnowledgeChunkCountEl.textContent = String(knowledgeChunks.length);
   clearKnowledgeButton.disabled = !hasKnowledge;
+  studentClearKnowledgeButton.disabled = !hasKnowledge;
+  studentKnowledgeHint.textContent = hasKnowledge
+    ? `目前已載入「${knowledgeFileName}」。`
+    : "目前尚未載入資料檔案。";
   chatHint.textContent = hasKnowledge
     ? `目前已載入「${knowledgeFileName}」，AI 會先擷取相關片段後回答。`
     : "目前尚未載入知識庫，AI 將使用一般模型能力回答。";
