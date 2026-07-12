@@ -454,7 +454,7 @@ textarea:focus {
 .composer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 96px;
-  align-items: stretch;
+  align-items: end;
   gap: 12px;
   padding: 16px;
   border-top: 1px solid var(--line);
@@ -462,12 +462,14 @@ textarea:focus {
 }
 
 .composer textarea {
+  height: 52px;
   min-height: 52px;
   max-height: 180px;
 }
 
 .composer button {
-  align-self: stretch;
+  align-self: end;
+  height: 52px;
   min-height: 52px;
   background: var(--accent);
   color: white;
