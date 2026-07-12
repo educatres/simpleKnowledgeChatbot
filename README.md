@@ -4,12 +4,6 @@
 
 一個可以部署在 GitHub Pages 的純前端 AI 聊天機器人。老師可以使用自己的 CGU、OpenAI、Google AI Studio 或 Claude API Key，快速建立臨時 AI 聊天頁面，也可以上傳 `.txt` 或 `.md` 知識庫，讓 AI 優先根據指定資料回答。
 
-網站範例：
-
-```text
-https://educatres.github.io/simpleKnowledgeChatbot/
-```
-
 ## 使用情境
 
 老師在課堂中導入 AI 工具時，學生可能沒有可用的帳號或電子信箱，無法自行註冊相關服務。
@@ -28,7 +22,6 @@ https://educatres.github.io/simpleKnowledgeChatbot/
 - 可上傳 `.txt` 或 `.md` 知識庫檔案。
 - 知識庫只在瀏覽器端讀取與切段，不會上傳到網站伺服器。
 - 可選擇「優先根據知識庫」或「嚴格限制在知識庫範圍內回答」。
-- 支援網址 GET 參數帶入 `p`、`k`、`m`、`sp`。
 - 可在工具區依目前參數產生學生網址與 QR Code。
 - 如果網址帶入 API Key，工具列會自動鎖住並隱藏，避免學生看到或修改設定。
 - 知識庫設定預設隱藏，需要時再展開。
@@ -40,8 +33,12 @@ https://educatres.github.io/simpleKnowledgeChatbot/
 3. 在「API 設定」選擇 API 提供者。
 4. 輸入 API Key。
 5. 選擇預設模型，或在「自訂模型」輸入模型名稱。
-6. 可選擇是否上傳 `.txt` 或 `.md` 知識庫。
-7. 在聊天區輸入問題並送出。
+6. 依需要填寫 system prompt（系統提示）。
+7. 按下「產生網址與 QR Code」，系統會自動建立學生使用的連結與 QR Code。
+8. 將網址或 QR Code 分享給學生。
+9. 若老師本人要使用知識庫，可另外上傳 `.txt` 或 `.md` 檔案後開始對話。
+
+> 由於網址有長度限制，產生的學生連結只會帶入 system prompt（系統提示），不會包含老師自行上傳的知識庫。學生開啟連結後，無法使用老師本機上傳的知識庫內容。
 
 ## API 提供者
 
@@ -63,65 +60,11 @@ claude
 | `google` | Google AI Studio API Key | `https://generativelanguage.googleapis.com/v1beta` |
 | `claude` | Claude API Key | `https://api.anthropic.com/v1` |
 
-## 使用網址帶入設定
-
-網址可以用 GET 參數帶入四個設定：
-
-```text
-p=API提供者
-k=API金鑰
-m=模型名稱
-sp=系統提示
-```
-
-格式如下：
-
-```text
-https://educatres.github.io/simpleKnowledgeChatbot/?p=PROVIDER&k=API_KEY&m=MODEL&sp=SYSTEM_PROMPT
-```
-
-仍可讀取舊參數 `provider`、`apiKey`、`key`、`model`、`systemPrompt`，但網頁產生學生網址時會使用較短的參數名稱，讓 QR Code 比較容易產生成功。
-
-```text
-https://educatres.github.io/simpleKnowledgeChatbot/?p=google&k=YOUR_GOOGLE_API_KEY&m=gemini-2.5-flash&sp=你是一個使用繁體中文回答的教學助理
-```
-
-## 各提供者網址範例
-
-CGU：
-
-```text
-https://educatres.github.io/simpleKnowledgeChatbot/?p=cgu&k=YOUR_CGU_API_KEY&m=gpt-5.4-mini&sp=你是一個清楚可靠的教學助理
-```
-
-OpenAI：
-
-```text
-https://educatres.github.io/simpleKnowledgeChatbot/?p=openai&k=YOUR_OPENAI_API_KEY&m=gpt-5.1-mini&sp=你是一個使用繁體中文回答的教學助理
-```
-
-Google AI Studio：
-
-```text
-https://educatres.github.io/simpleKnowledgeChatbot/?p=google&k=YOUR_GOOGLE_API_KEY&m=gemini-2.5-flash&sp=你是一個使用繁體中文回答的教學助理
-```
-
-Claude：
-
-```text
-https://educatres.github.io/simpleKnowledgeChatbot/?p=claude&k=YOUR_CLAUDE_API_KEY&m=claude-sonnet-4-5&sp=你是一個使用繁體中文回答的教學助理
-```
-
-使用時只需要替換：
-
-- `p`：改成 `cgu`、`openai`、`google` 或 `claude`
-- `k`：改成你的 API Key
-- `m`：改成你要使用的模型名稱
-- `sp`：改成你要套用的系統提示
-
 ## 給學生使用的連結
 
-如果網址中帶有 `k`、`apiKey` 或 `key` 參數，網頁會判定這是老師提供給學生使用的連結，並自動：
+老師完成 API 提供者、API Key、模型與 system prompt（系統提示）設定後，只要按下「產生網址與 QR Code」，網頁就會自動建立學生使用的連結與 QR Code，不需要手動編輯網址。
+
+學生開啟產生的連結後，網頁會自動：
 
 - 讀入 API Key。
 - 讀入指定 provider 與 model。
@@ -131,20 +74,7 @@ https://educatres.github.io/simpleKnowledgeChatbot/?p=claude&k=YOUR_CLAUDE_API_K
 
 這可以降低學生看到或修改 API Key 的機會。不過 API Key 仍然存在於網址中，因此這不是長期公開使用的安全方案。
 
-## 產生 QR Code 的建議流程
-
-1. 先準備好完整網址，例如：
-
-   ```text
-   https://educatres.github.io/simpleKnowledgeChatbot/?p=google&k=YOUR_GOOGLE_API_KEY&m=gemini-2.5-flash&sp=你是一個使用繁體中文回答的教學助理
-   ```
-
-2. 將網址中的 `YOUR_GOOGLE_API_KEY` 換成課堂臨時使用的 API Key，並依需要調整 `sp` 系統提示。
-3. 使用任何 QR Code 產生器把網址轉成 QR Code。
-4. 在課堂中投影或印出 QR Code。
-5. 課程結束後立即更換或註銷該 API Key。
-
-也可以直接在網頁工具區中調整 API 提供者、API Key 與模型後，按下「產生網址與 QR Code」，網頁會自動產生學生可用的連結與 QR Code。
+由於網址有長度限制，學生連結只支援傳遞 system prompt（系統提示），無法包含老師自行上傳的知識庫。若學生需要使用相同知識庫，必須在自己的瀏覽器中另外上傳檔案。
 
 ## 知識庫功能
 
@@ -167,6 +97,7 @@ https://educatres.github.io/simpleKnowledgeChatbot/?p=claude&k=YOUR_CLAUDE_API_K
 
 - 知識庫檔案不會儲存到 GitHub。
 - 知識庫檔案不會上傳到本網站伺服器。
+- 知識庫只存在於目前使用者的瀏覽器中，無法透過自動產生的網址或 QR Code 傳給學生的 Chatbot。
 - 送出問題時，相關知識片段會連同問題一起送到你選擇的 AI API。
 - 請勿上傳高度敏感、個資、機密或不應提供給第三方 AI 服務的資料。
 
