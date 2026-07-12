@@ -22,6 +22,7 @@ https://educatres.github.io/simpleKnowledgeChatbot/
 - 可直接部署到 GitHub Pages。
 - 支援 CGU、OpenAI、Google AI Studio、Claude API。
 - 可使用預設模型，也可輸入自訂模型名稱。
+- 支援串流輸出；若 API 回傳不支援串流，會改用逐字動畫顯示回答。
 - 可上傳 `.txt` 或 `.md` 知識庫檔案。
 - 知識庫只在瀏覽器端讀取與切段，不會上傳到網站伺服器。
 - 可選擇「優先根據知識庫」或「嚴格限制在知識庫範圍內回答」。

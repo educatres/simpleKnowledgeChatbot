@@ -2,6 +2,7 @@ const CHUNK_SIZE = 1000;
 const CHUNK_OVERLAP = 150;
 const DEFAULT_MAX_OUTPUT_TOKENS = 4096;
 const GOOGLE_MAX_OUTPUT_TOKENS = 8192;
+const TYPEWRITER_CHARS_PER_FRAME = 3;
 const ANSWER_MODE_STORAGE_KEY = "cgu_chatbot_answer_mode";
 const TOOL_PANEL_STORAGE_KEY = "knowledge_chatbot_tool_panel_collapsed";
 const PROVIDERS = {
@@ -280,22 +281,38 @@ async function handleChatSubmit(event) {
   setSendingState(true);
 
   const pendingMessage = showMessage("正在思考...", "assistant");
+  const pendingMessageBody = pendingMessage.querySelector(".message-body");
+  pendingMessage.classList.add("streaming");
 
   try {
     const prompt = buildPrompt(question);
+    let hasStreamedText = false;
     const answer = await callProviderApi({
       prompt,
       apiKey,
       model,
       endpoint,
       provider,
+      onTextDelta: (text) => {
+        if (!hasStreamedText) {
+          pendingMessageBody.textContent = "";
+          hasStreamedText = true;
+        }
+
+        pendingMessageBody.textContent += text;
+        messages.scrollTop = messages.scrollHeight;
+      },
     });
-    pendingMessage.querySelector(".message-body").textContent = answer;
+
+    if (!hasStreamedText) {
+      await typeText(pendingMessageBody, answer);
+    }
   } catch (error) {
     pendingMessage.classList.add("error");
-    pendingMessage.querySelector(".message-body").textContent =
+    pendingMessageBody.textContent =
       error instanceof Error ? error.message : `${provider.label} API 呼叫失敗，請稍後再試。`;
   } finally {
+    pendingMessage.classList.remove("streaming");
     setSendingState(false);
   }
 }
@@ -311,19 +328,19 @@ function buildPrompt(question) {
   return buildPromptWithKnowledge(question, relevantChunks, answerMode, systemPrompt);
 }
 
-async function callProviderApi({ prompt, apiKey, model, endpoint, provider }) {
+async function callProviderApi({ prompt, apiKey, model, endpoint, provider, onTextDelta }) {
   if (provider.type === "google_generate_content") {
-    return callGoogleAiStudioApi(prompt, apiKey, model, endpoint, provider.label);
+    return callGoogleAiStudioApi(prompt, apiKey, model, endpoint, provider.label, onTextDelta);
   }
 
   if (provider.type === "claude_messages") {
-    return callClaudeApi(prompt, apiKey, model, endpoint, provider.label);
+    return callClaudeApi(prompt, apiKey, model, endpoint, provider.label, onTextDelta);
   }
 
-  return callResponsesApi(prompt, apiKey, model, endpoint, provider.label);
+  return callResponsesApi(prompt, apiKey, model, endpoint, provider.label, onTextDelta);
 }
 
-async function callResponsesApi(prompt, apiKey, model, endpoint, providerLabel) {
+async function callResponsesApi(prompt, apiKey, model, endpoint, providerLabel, onTextDelta) {
   const responseEndpoint = `${normalizeEndpoint(endpoint)}/responses`;
 
   const response = await fetch(responseEndpoint, {
@@ -336,8 +353,28 @@ async function callResponsesApi(prompt, apiKey, model, endpoint, providerLabel) 
       model,
       input: prompt,
       max_output_tokens: DEFAULT_MAX_OUTPUT_TOKENS,
+      stream: Boolean(onTextDelta),
     }),
   });
+
+  if (isSseResponse(response) && onTextDelta && response.body) {
+    const streamedText = await readSseStream(response, (data) => {
+      const delta =
+        data.type === "response.output_text.delta"
+          ? data.delta
+          : data.type === "response.refusal.delta"
+            ? data.delta
+            : "";
+
+      if (delta) {
+        onTextDelta(delta);
+      }
+
+      return delta;
+    });
+
+    if (streamedText) return streamedText;
+  }
 
   const data = await response.json().catch(() => null);
 
@@ -355,10 +392,11 @@ async function callResponsesApi(prompt, apiKey, model, endpoint, providerLabel) 
   return answer;
 }
 
-async function callGoogleAiStudioApi(prompt, apiKey, model, endpoint, providerLabel) {
+async function callGoogleAiStudioApi(prompt, apiKey, model, endpoint, providerLabel, onTextDelta) {
+  const methodName = onTextDelta ? "streamGenerateContent?alt=sse" : "generateContent";
   const responseEndpoint = `${normalizeEndpoint(endpoint)}/models/${encodeURIComponent(
     model
-  )}:generateContent`;
+  )}:${methodName}`;
 
   const response = await fetch(responseEndpoint, {
     method: "POST",
@@ -379,6 +417,25 @@ async function callGoogleAiStudioApi(prompt, apiKey, model, endpoint, providerLa
     }),
   });
 
+  if (isSseResponse(response) && onTextDelta && response.body) {
+    let finishReason = "";
+    const streamedText = await readSseStream(response, (data) => {
+      const candidate = data?.candidates?.[0];
+      finishReason = candidate?.finishReason || finishReason;
+      const delta = extractGoogleCandidateText(candidate);
+
+      if (delta) {
+        onTextDelta(delta);
+      }
+
+      return delta;
+    });
+
+    if (streamedText) {
+      return appendMaxTokensWarning(streamedText, finishReason);
+    }
+  }
+
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
@@ -387,23 +444,16 @@ async function callGoogleAiStudioApi(prompt, apiKey, model, endpoint, providerLa
   }
 
   const candidate = data?.candidates?.[0];
-  const answer = candidate?.content?.parts
-    ?.map((part) => part.text || "")
-    .join("")
-    .trim();
+  const answer = extractGoogleCandidateText(candidate).trim();
 
   if (!answer) {
     throw new Error(`${providerLabel} API 沒有回傳可顯示的回答。`);
   }
 
-  if (candidate?.finishReason === "MAX_TOKENS") {
-    return `${answer}\n\n提醒：Google AI Studio 回覆達到目前輸出上限，內容可能仍被截斷。你可以要求模型「繼續」或把問題拆小一點。`;
-  }
-
-  return answer;
+  return appendMaxTokensWarning(answer, candidate?.finishReason);
 }
 
-async function callClaudeApi(prompt, apiKey, model, endpoint, providerLabel) {
+async function callClaudeApi(prompt, apiKey, model, endpoint, providerLabel, onTextDelta) {
   const responseEndpoint = `${normalizeEndpoint(endpoint)}/messages`;
 
   const response = await fetch(responseEndpoint, {
@@ -417,6 +467,7 @@ async function callClaudeApi(prompt, apiKey, model, endpoint, providerLabel) {
     body: JSON.stringify({
       model,
       max_tokens: DEFAULT_MAX_OUTPUT_TOKENS,
+      stream: Boolean(onTextDelta),
       messages: [
         {
           role: "user",
@@ -425,6 +476,20 @@ async function callClaudeApi(prompt, apiKey, model, endpoint, providerLabel) {
       ],
     }),
   });
+
+  if (isSseResponse(response) && onTextDelta && response.body) {
+    const streamedText = await readSseStream(response, (data) => {
+      const delta = data.type === "content_block_delta" ? data.delta?.text || "" : "";
+
+      if (delta) {
+        onTextDelta(delta);
+      }
+
+      return delta;
+    });
+
+    if (streamedText) return streamedText;
+  }
 
   const data = await response.json().catch(() => null);
 
@@ -443,6 +508,70 @@ async function callClaudeApi(prompt, apiKey, model, endpoint, providerLabel) {
   }
 
   return answer;
+}
+
+async function readSseStream(response, handleData) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let fullText = "";
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const events = buffer.split(/\n\n|\r\n\r\n/);
+    buffer = events.pop() || "";
+
+    for (const eventText of events) {
+      const delta = parseSseEvent(eventText, handleData);
+      if (delta) fullText += delta;
+    }
+  }
+
+  if (buffer.trim()) {
+    const delta = parseSseEvent(buffer, handleData);
+    if (delta) fullText += delta;
+  }
+
+  return fullText.trim();
+}
+
+function parseSseEvent(eventText, handleData) {
+  const dataLines = eventText
+    .split(/\r?\n/)
+    .filter((line) => line.startsWith("data:"))
+    .map((line) => line.slice(5).trim());
+
+  let fullDelta = "";
+
+  for (const dataLine of dataLines) {
+    if (!dataLine || dataLine === "[DONE]") continue;
+
+    try {
+      const data = JSON.parse(dataLine);
+      fullDelta += handleData(data) || "";
+    } catch (error) {
+      // Ignore malformed stream chunks and keep reading the rest of the response.
+    }
+  }
+
+  return fullDelta;
+}
+
+function extractGoogleCandidateText(candidate) {
+  return (
+    candidate?.content?.parts
+      ?.map((part) => part.text || "")
+      .join("") || ""
+  );
+}
+
+function appendMaxTokensWarning(answer, finishReason) {
+  if (finishReason !== "MAX_TOKENS") return answer;
+
+  return `${answer}\n\n提醒：Google AI Studio 回覆達到目前輸出上限，內容可能仍被截斷。你可以要求模型「繼續」或把問題拆小一點。`;
 }
 
 function extractResponsesAnswerText(data) {
@@ -467,6 +596,10 @@ function extractResponsesAnswerText(data) {
 
 function normalizeEndpoint(endpoint) {
   return endpoint.replace(/\/+$/, "");
+}
+
+function isSseResponse(response) {
+  return response.ok && response.headers.get("content-type")?.includes("text/event-stream");
 }
 
 function getSelectedProvider() {
@@ -699,6 +832,29 @@ function showMessage(text, role = "assistant") {
   messages.scrollTop = messages.scrollHeight;
 
   return article;
+}
+
+function typeText(element, text) {
+  element.textContent = "";
+
+  return new Promise((resolve) => {
+    let index = 0;
+
+    function writeNextFrame() {
+      index = Math.min(index + TYPEWRITER_CHARS_PER_FRAME, text.length);
+      element.textContent = text.slice(0, index);
+      messages.scrollTop = messages.scrollHeight;
+
+      if (index >= text.length) {
+        resolve();
+        return;
+      }
+
+      requestAnimationFrame(writeNextFrame);
+    }
+
+    writeNextFrame();
+  });
 }
 
 function setSendingState(isSending) {

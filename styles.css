@@ -401,6 +401,24 @@ textarea:focus {
   color: #8f1d1d;
 }
 
+.message.streaming .message-body::after {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  margin-left: 3px;
+  border-radius: 2px;
+  background: currentColor;
+  vertical-align: -0.15em;
+  animation: cursor-blink 900ms steps(2, start) infinite;
+}
+
+@keyframes cursor-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 .composer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 96px;
