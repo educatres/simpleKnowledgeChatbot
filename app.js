@@ -6,6 +6,7 @@ const TYPEWRITER_CHARS_PER_FRAME = 3;
 const ANSWER_MODE_STORAGE_KEY = "cgu_chatbot_answer_mode";
 const TOOL_PANEL_STORAGE_KEY = "knowledge_chatbot_tool_panel_collapsed";
 const APP_STATE_STORAGE_KEY = "knowledge_chatbot_app_state";
+const STUDENT_KEY_MASK = "kchat";
 const PROVIDERS = {
   cgu: {
     label: "CGU",
@@ -761,7 +762,8 @@ function handleStudentKnowledgeBackdropClick(event) {
 function applyUrlSettings() {
   const params = new URLSearchParams(window.location.search);
   const providerId = normalizeProviderId(params.get("p") || params.get("provider") || params.get("apiProvider"));
-  const apiKey = params.get("k") || params.get("apiKey") || params.get("key");
+  const encodedApiKey = params.get("ek");
+  const apiKey = decodeStudentApiKey(encodedApiKey) || params.get("k") || params.get("apiKey") || params.get("key");
   const model = params.get("m") || params.get("model");
   const systemPrompt = params.get("sp") || params.get("systemPrompt");
 
@@ -848,10 +850,49 @@ function buildStudentUrl(apiKey) {
   const url = new URL(window.location.href);
   url.search = "";
   url.searchParams.set("p", providerSelect.value || "cgu");
-  url.searchParams.set("k", apiKey);
+  url.searchParams.set("ek", encodeStudentApiKey(apiKey));
   url.searchParams.set("m", getSelectedModel() || "gpt-5.4-mini");
   url.searchParams.set("sp", systemPromptInput.value.trim());
   return url.toString();
+}
+
+function encodeStudentApiKey(apiKey) {
+  return base64UrlEncode(xorText(apiKey, STUDENT_KEY_MASK));
+}
+
+function decodeStudentApiKey(encodedApiKey) {
+  if (!encodedApiKey) return "";
+
+  try {
+    return xorText(base64UrlDecode(encodedApiKey), STUDENT_KEY_MASK);
+  } catch (error) {
+    return "";
+  }
+}
+
+function xorText(text, mask) {
+  return [...text]
+    .map((char, index) =>
+      String.fromCharCode(char.charCodeAt(0) ^ mask.charCodeAt(index % mask.length))
+    )
+    .join("");
+}
+
+function base64UrlEncode(text) {
+  const bytes = new TextEncoder().encode(text);
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function base64UrlDecode(text) {
+  const paddedText = text.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(text.length / 4) * 4, "=");
+  const binary = atob(paddedText);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
 }
 
 function renderQrCode(url) {
