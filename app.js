@@ -46,7 +46,7 @@ let knowledgeBaseText = "";
 let knowledgeChunks = [];
 let knowledgeFileName = "";
 let answerMode = "knowledge_first";
-let isToolPanelCollapsed = false;
+let isToolPanelCollapsed = true;
 let isSettingsLocked = false;
 
 const appShell = document.querySelector("#appShell");
@@ -95,7 +95,7 @@ function init() {
   if (savedAnswerMode === "knowledge_first" || savedAnswerMode === "strict_knowledge") {
     answerMode = savedAnswerMode;
   }
-  isToolPanelCollapsed = localStorage.getItem(TOOL_PANEL_STORAGE_KEY) !== "false";
+  isToolPanelCollapsed = true;
 
   answerModeSelect.value = answerMode;
   studentAnswerModeSelect.value = answerMode;
@@ -676,7 +676,7 @@ function restoreAppState() {
   }
 
   if (typeof savedState.isToolPanelCollapsed === "boolean") {
-    isToolPanelCollapsed = savedState.isToolPanelCollapsed;
+    isToolPanelCollapsed = true;
   }
 
   if (savedState.knowledgeBaseText && savedState.knowledgeFileName) {
@@ -923,7 +923,6 @@ function toggleToolPanel() {
   if (isSettingsLocked) return;
 
   isToolPanelCollapsed = !isToolPanelCollapsed;
-  localStorage.setItem(TOOL_PANEL_STORAGE_KEY, String(isToolPanelCollapsed));
   updateToolPanelUi();
   saveAppState();
 }

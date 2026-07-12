@@ -50,25 +50,17 @@ button {
 }
 
 .app-shell {
-  display: grid;
-  grid-template-columns: clamp(300px, 28vw, 380px) minmax(0, 1fr);
-  gap: 20px;
+  display: block;
   height: 100dvh;
   min-height: 560px;
-  padding: 20px;
-  transition: grid-template-columns 180ms ease;
-}
-
-.app-shell.tool-panel-collapsed {
-  grid-template-columns: minmax(0, 1fr);
+  padding: 0;
 }
 
 .app-shell.tool-panel-collapsed .settings-panel {
   display: none;
 }
 
-.settings-panel,
-.chat-panel {
+.settings-panel {
   background: var(--panel);
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
@@ -78,11 +70,23 @@ button {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  position: fixed;
+  inset: 50% auto auto 50%;
+  z-index: 30;
+  width: min(420px, calc(100vw - 32px));
   overflow: auto;
-  min-height: 0;
-  max-height: calc(100dvh - 40px);
+  max-height: calc(100dvh - 48px);
   padding: 22px;
   border-radius: 8px;
+  transform: translate(-50%, -50%);
+}
+
+.app-shell:not(.tool-panel-collapsed)::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  background: rgba(23, 32, 42, 0.28);
 }
 
 .brand {
@@ -347,11 +351,11 @@ textarea:focus {
 .chat-panel {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
-  height: 100%;
+  height: 100dvh;
   min-height: 0;
   min-width: 0;
   overflow: hidden;
-  border-radius: 8px;
+  background: var(--panel);
 }
 
 .chat-header {
@@ -518,17 +522,16 @@ textarea:focus {
 
 @media (max-width: 860px) {
   .app-shell {
-    grid-template-columns: 1fr;
-    height: auto;
-    padding: 12px;
+    height: 100dvh;
+    min-height: 0;
   }
 
   .settings-panel {
-    max-height: none;
+    max-height: calc(100dvh - 24px);
   }
 
   .chat-panel {
-    min-height: calc(100dvh - 24px);
+    height: 100dvh;
   }
 }
 
