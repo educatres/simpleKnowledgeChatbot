@@ -68,9 +68,6 @@ const answerModeSelect = document.querySelector("#answerModeSelect");
 const clearKnowledgeButton = document.querySelector("#clearKnowledgeButton");
 const clearChatButton = document.querySelector("#clearChatButton");
 const settingsToggleButton = document.querySelector("#settingsToggleButton");
-const urlHelpButton = document.querySelector("#urlHelpButton");
-const urlHelpDialog = document.querySelector("#urlHelpDialog");
-const urlExampleOutput = document.querySelector("#urlExampleOutput");
 const chatHint = document.querySelector("#chatHint");
 const messages = document.querySelector("#messages");
 const chatForm = document.querySelector("#chatForm");
@@ -93,7 +90,6 @@ function init() {
   updateKnowledgeUi();
 
   providerSelect.addEventListener("change", handleProviderChange);
-  urlHelpButton.addEventListener("click", showUrlHelp);
   generateStudentLinkButton.addEventListener("click", generateStudentLink);
   copyStudentLinkButton.addEventListener("click", copyStudentLink);
   knowledgeToggleButton.addEventListener("click", toggleKnowledgeSettings);
@@ -494,9 +490,10 @@ function toggleKnowledgeSettings() {
 
 function applyUrlSettings() {
   const params = new URLSearchParams(window.location.search);
-  const providerId = normalizeProviderId(params.get("provider") || params.get("apiProvider"));
-  const apiKey = params.get("apiKey") || params.get("key");
-  const model = params.get("model");
+  const providerId = normalizeProviderId(params.get("p") || params.get("provider") || params.get("apiProvider"));
+  const apiKey = params.get("k") || params.get("apiKey") || params.get("key");
+  const model = params.get("m") || params.get("model");
+  const systemPrompt = params.get("sp") || params.get("systemPrompt");
 
   if (providerId) {
     providerSelect.value = providerId;
@@ -511,6 +508,10 @@ function applyUrlSettings() {
 
   if (model) {
     setModelValue(model);
+  }
+
+  if (systemPrompt) {
+    systemPromptInput.value = systemPrompt;
   }
 }
 
@@ -530,22 +531,6 @@ function setModelValue(model) {
   }
 
   customModelInput.value = trimmedModel;
-}
-
-function showUrlHelp() {
-  const exampleUrl = buildExampleUrl();
-  urlExampleOutput.value = exampleUrl;
-
-  if (typeof urlHelpDialog.showModal === "function") {
-    urlHelpDialog.showModal();
-    return;
-  }
-
-  window.alert(`網址參數範例：\n${exampleUrl}`);
-}
-
-function buildExampleUrl() {
-  return buildStudentUrl(apiKeyInput.value.trim() || "YOUR_API_KEY");
 }
 
 function generateStudentLink() {
@@ -587,30 +572,29 @@ async function copyStudentLink() {
 function buildStudentUrl(apiKey) {
   const url = new URL(window.location.href);
   url.search = "";
-  url.searchParams.set("provider", providerSelect.value || "cgu");
-  url.searchParams.set("apiKey", apiKey);
-  url.searchParams.set("model", getSelectedModel() || "gpt-5.4-mini");
+  url.searchParams.set("p", providerSelect.value || "cgu");
+  url.searchParams.set("k", apiKey);
+  url.searchParams.set("m", getSelectedModel() || "gpt-5.4-mini");
+  url.searchParams.set("sp", systemPromptInput.value.trim());
   return url.toString();
 }
 
-async function renderQrCode(url) {
+function renderQrCode(url) {
   studentQrCode.innerHTML = "";
 
-  if (!window.QRCode?.toCanvas) {
+  if (typeof QRCode !== "function") {
     const fallback = document.createElement("p");
     fallback.textContent = "QR Code 函式庫載入失敗，請先使用上方學生網址。";
     studentQrCode.append(fallback);
     return;
   }
 
-  const canvas = document.createElement("canvas");
-  studentQrCode.append(canvas);
-
   try {
-    await window.QRCode.toCanvas(canvas, url, {
-      width: 220,
-      margin: 2,
-      errorCorrectionLevel: "M",
+    new QRCode(studentQrCode, {
+      text: url,
+      width: 260,
+      height: 260,
+      correctLevel: QRCode.CorrectLevel.L,
     });
   } catch (error) {
     studentQrCode.innerHTML = "";
