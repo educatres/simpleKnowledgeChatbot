@@ -300,6 +300,21 @@ textarea:focus {
   margin: 0;
 }
 
+.url-examples {
+  display: grid;
+  gap: 12px;
+}
+
+.url-examples h3 {
+  margin: 0;
+  font-size: 0.96rem;
+}
+
+.url-examples textarea {
+  min-height: 82px;
+  font-size: 0.86rem;
+}
+
 #urlExampleOutput {
   min-height: 94px;
 }
