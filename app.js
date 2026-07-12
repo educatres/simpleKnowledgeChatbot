@@ -68,6 +68,7 @@ const knowledgeCharCountEl = document.querySelector("#knowledgeCharCount");
 const knowledgeChunkCountEl = document.querySelector("#knowledgeChunkCount");
 const answerModeSelect = document.querySelector("#answerModeSelect");
 const clearKnowledgeButton = document.querySelector("#clearKnowledgeButton");
+const clearAllRecordsButton = document.querySelector("#clearAllRecordsButton");
 const clearChatButton = document.querySelector("#clearChatButton");
 const settingsToggleButton = document.querySelector("#settingsToggleButton");
 const studentKnowledgeBox = document.querySelector("#studentKnowledgeBox");
@@ -122,6 +123,7 @@ function init() {
   studentAnswerModeSelect.addEventListener("change", handleAnswerModeChange);
   clearKnowledgeButton.addEventListener("click", clearKnowledgeBase);
   studentClearKnowledgeButton.addEventListener("click", clearKnowledgeBase);
+  clearAllRecordsButton.addEventListener("click", clearAllRecords);
   clearChatButton.addEventListener("click", clearChat);
   chatForm.addEventListener("submit", handleChatSubmit);
   questionInput.addEventListener("keydown", handleQuestionKeydown);
@@ -954,6 +956,37 @@ function clearKnowledgeBase() {
   updateKnowledgeUi();
   saveAppState();
   showMessage("已清除知識庫。", "system");
+}
+
+function clearAllRecords() {
+  const shouldClear = window.confirm("確定要清除所有本機記錄嗎？這會移除 API Key、對話、學生網址與上傳資料記錄。");
+  if (!shouldClear) return;
+
+  localStorage.clear();
+
+  knowledgeBaseText = "";
+  knowledgeChunks = [];
+  knowledgeFileName = "";
+  answerMode = "knowledge_first";
+  isToolPanelCollapsed = false;
+
+  providerSelect.value = "google";
+  apiKeyInput.value = "";
+  studentLinkOutput.value = "";
+  studentQrCode.innerHTML = "";
+  copyStudentLinkButton.disabled = true;
+  systemPromptInput.value = "你是一個清楚、可靠、使用繁體中文回答的 AI 助手。";
+  questionInput.value = "";
+  knowledgeFileInput.value = "";
+  studentKnowledgeFileInput.value = "";
+  answerModeSelect.value = answerMode;
+  studentAnswerModeSelect.value = answerMode;
+  updateProviderUi(providerSelect.value);
+  updateToolPanelUi();
+  updateKnowledgeUi();
+
+  messages.innerHTML = "";
+  showMessage("已清除所有本機記錄。", "system", false);
 }
 
 function clearChat() {
