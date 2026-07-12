@@ -127,7 +127,6 @@ function init() {
   clearAllRecordsButton.addEventListener("click", clearAllRecords);
   clearChatButton.addEventListener("click", clearChat);
   chatForm.addEventListener("submit", handleChatSubmit);
-  questionInput.addEventListener("keydown", handleQuestionKeydown);
 }
 
 function handleKnowledgeFileChange(event) {
@@ -1099,11 +1098,4 @@ function setSendingState(isSending) {
   sendButton.disabled = isSending;
   questionInput.disabled = isSending;
   sendButton.textContent = isSending ? "送出中" : "送出";
-}
-
-function handleQuestionKeydown(event) {
-  if (event.key === "Enter" && !event.shiftKey) {
-    event.preventDefault();
-    chatForm.requestSubmit();
-  }
 }
