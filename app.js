@@ -1,5 +1,7 @@
 const CHUNK_SIZE = 1000;
 const CHUNK_OVERLAP = 150;
+const DEFAULT_MAX_OUTPUT_TOKENS = 4096;
+const GOOGLE_MAX_OUTPUT_TOKENS = 8192;
 const ANSWER_MODE_STORAGE_KEY = "cgu_chatbot_answer_mode";
 const TOOL_PANEL_STORAGE_KEY = "knowledge_chatbot_tool_panel_collapsed";
 const PROVIDERS = {
@@ -327,7 +329,7 @@ async function callResponsesApi(prompt, apiKey, model, endpoint, providerLabel) 
     body: JSON.stringify({
       model,
       input: prompt,
-      max_output_tokens: 2048,
+      max_output_tokens: DEFAULT_MAX_OUTPUT_TOKENS,
     }),
   });
 
@@ -366,7 +368,7 @@ async function callGoogleAiStudioApi(prompt, apiKey, model, endpoint, providerLa
         },
       ],
       generationConfig: {
-        maxOutputTokens: 2048,
+        maxOutputTokens: GOOGLE_MAX_OUTPUT_TOKENS,
       },
     }),
   });
@@ -378,13 +380,18 @@ async function callGoogleAiStudioApi(prompt, apiKey, model, endpoint, providerLa
     throw new Error(`${providerLabel} API 呼叫失敗${apiMessage}`);
   }
 
-  const answer = data?.candidates?.[0]?.content?.parts
+  const candidate = data?.candidates?.[0];
+  const answer = candidate?.content?.parts
     ?.map((part) => part.text || "")
     .join("")
     .trim();
 
   if (!answer) {
     throw new Error(`${providerLabel} API 沒有回傳可顯示的回答。`);
+  }
+
+  if (candidate?.finishReason === "MAX_TOKENS") {
+    return `${answer}\n\n提醒：Google AI Studio 回覆達到目前輸出上限，內容可能仍被截斷。你可以要求模型「繼續」或把問題拆小一點。`;
   }
 
   return answer;
@@ -403,7 +410,7 @@ async function callClaudeApi(prompt, apiKey, model, endpoint, providerLabel) {
     },
     body: JSON.stringify({
       model,
-      max_tokens: 2048,
+      max_tokens: DEFAULT_MAX_OUTPUT_TOKENS,
       messages: [
         {
           role: "user",
