@@ -19,6 +19,9 @@
 
         <section class="settings-section" aria-labelledby="api-settings-title">
           <h2 id="api-settings-title">API 設定</h2>
+          <p class="settings-description">
+            請先選擇 API 提供者並輸入 API Key。你可以直接聊天，也可以先上傳 .txt 或 .md 知識庫後再提問。
+          </p>
           <button id="urlHelpButton" class="secondary-button" type="button">網址參數說明</button>
           <label class="field">
             <span>提供者</span>
@@ -157,11 +160,7 @@
           </button>
         </header>
 
-        <div id="messages" class="messages" aria-live="polite">
-          <article class="message assistant">
-            <div class="message-body">請先選擇 API 提供者並輸入 API Key。你可以直接聊天，也可以先上傳 .txt 或 .md 知識庫後再提問。</div>
-          </article>
-        </div>
+        <div id="messages" class="messages" aria-live="polite"></div>
 
         <form id="chatForm" class="composer">
           <textarea
