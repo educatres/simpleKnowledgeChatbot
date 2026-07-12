@@ -1,5 +1,7 @@
 # Simple Knowledge Chatbot
 
+![Simple Knowledge Chatbot UI](UI.png)
+
 一個可以部署在 GitHub Pages 的純前端 AI 聊天機器人。老師可以使用自己的 CGU、OpenAI、Google AI Studio 或 Claude API Key，快速建立臨時 AI 聊天頁面，也可以上傳 `.txt` 或 `.md` 知識庫，讓 AI 優先根據指定資料回答。
 
 網站範例：
