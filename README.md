@@ -12,6 +12,10 @@
 
 安全提醒：課程活動結束後，老師應立即更換或註銷本次使用的 API Key，避免金鑰外流、遭他人未授權使用，或產生額外費用。
 
+可直接使用的網址：[https://educatres.github.io/simpleKnowledgeChatbot/](https://educatres.github.io/simpleKnowledgeChatbot/)
+
+需要 Google API Key 的老師，可搜尋：[如何申請 Google AI Studio API Key](https://www.google.com/search?q=%E5%A6%82%E4%BD%95%E7%94%B3%E8%AB%8B%20Google%20AI%20Studio%20API%20Key)
+
 ## 功能特色
 
 - 純前端設計，不需要後端伺服器或資料庫。
@@ -166,10 +170,6 @@ http://localhost:8000
 | `app.js` | 聊天、API 呼叫、知識庫與網址參數邏輯 |
 | `README.md` | 使用說明 |
 
-## 隱私與資料流
+## License
 
-- API Key 不會存入 `localStorage`。
-- 上傳的知識庫檔案不會存入 `localStorage`。
-- 工具列是否隱藏、回答模式會儲存在瀏覽器本機設定中。
-- 當使用者送出問題時，問題、系統提示與相關知識片段會送到選定的 AI API。
-- 本專案沒有後端伺服器，也沒有自己的資料庫。
+本專案採用 MIT License。
