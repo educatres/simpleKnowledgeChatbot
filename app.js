@@ -71,6 +71,7 @@ const answerModeSelect = document.querySelector("#answerModeSelect");
 const clearKnowledgeButton = document.querySelector("#clearKnowledgeButton");
 const clearAllRecordsButton = document.querySelector("#clearAllRecordsButton");
 const clearChatButton = document.querySelector("#clearChatButton");
+const closeSettingsPanelButton = document.querySelector("#closeSettingsPanelButton");
 const settingsToggleButton = document.querySelector("#settingsToggleButton");
 const studentKnowledgeBox = document.querySelector("#studentKnowledgeBox");
 const studentKnowledgeToggleButton = document.querySelector("#studentKnowledgeToggleButton");
@@ -118,6 +119,7 @@ function init() {
   studentKnowledgeToggleButton.addEventListener("click", toggleStudentKnowledgeSettings);
   studentKnowledgeBox.addEventListener("click", handleStudentKnowledgeBackdropClick);
   settingsToggleButton.addEventListener("click", toggleToolPanel);
+  closeSettingsPanelButton.addEventListener("click", closeToolPanel);
   knowledgeFileInput.addEventListener("change", handleKnowledgeFileChange);
   studentKnowledgeFileInput.addEventListener("change", handleKnowledgeFileChange);
   answerModeSelect.addEventListener("change", handleAnswerModeChange);
@@ -923,6 +925,14 @@ function toggleToolPanel() {
   if (isSettingsLocked) return;
 
   isToolPanelCollapsed = !isToolPanelCollapsed;
+  updateToolPanelUi();
+  saveAppState();
+}
+
+function closeToolPanel() {
+  if (isSettingsLocked) return;
+
+  isToolPanelCollapsed = true;
   updateToolPanelUi();
   saveAppState();
 }
